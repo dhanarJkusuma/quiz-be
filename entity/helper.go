@@ -10,6 +10,22 @@ type StandardResponse struct {
 	Data    interface{} `json:"data,omitempty"`
 }
 
+type SignInRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type SignUpRequest struct {
+	Username             string `json:"username"`
+	Email                string `json:"email"`
+	Password             string `json:"password"`
+	PasswordConfirmation string `json:"password_confirmation"`
+}
+
+type LogoutRequest struct {
+	UserID int64 `json:"user_id"`
+}
+
 type AnswerSocket struct {
 	SocketToken string `json:"token"`
 	AnswerID    int64  `json:"answer_id"`

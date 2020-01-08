@@ -6,7 +6,6 @@ import (
 
 func HandleCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-
 		rw.Header().Set("Access-Control-Allow-Origin", "*")
 		rw.Header().Set("Access-Control-Allow-Credentials", "true")
 		rw.Header().Set("Access-Control-Allow-Methods", "POST, PUT, PATCH, GET, DELETE, OPTIONS")

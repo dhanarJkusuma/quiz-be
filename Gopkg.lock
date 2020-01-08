@@ -15,7 +15,7 @@
   name = "github.com/dhanarJkusuma/pager"
   packages = ["."]
   pruneopts = "T"
-  revision = "92e1f78a65a3d8623c55d1bbb80ad7ee0e86e013"
+  revision = "ee3ef7ac92c6e67b01387e4097a344479bca9845"
 
 [[projects]]
   digest = "1:b46f50677ef33284ebde2b285a42b707ff9e1de1f37328d91869859c929ebbd2"

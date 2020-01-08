@@ -114,7 +114,7 @@ func generateAuth(options *authOptions) *pager.Pager {
 		DbConnection: options.db,
 		SchemaName:   options.schema,
 		Session: pager.SessionOptions{
-			LoginMethod:      pager.LoginEmailUsername,
+			LoginMethod:      pager.LoginEmail,
 			ExpiredInSeconds: int64(24 * time.Hour),
 			SessionName:      "cookie",
 		},

@@ -72,6 +72,7 @@ func (s *SocketCrossOriginServer) DoMatchMaking() {
 		time.Sleep(1 * time.Second)
 
 		s.mutex.RLock()
+		fmt.Println(s.userPoolConnection)
 		lenUsersPool := len(s.userPoolConnection)
 		iteration := lenUsersPool / 2
 		for k := 0; k < iteration; k++ {
@@ -99,7 +100,6 @@ func (s *SocketCrossOriginServer) DoMatchMaking() {
 		} else {
 			s.initPool()
 		}
-
 	}
 }
 
@@ -211,8 +211,6 @@ func (s *SocketCrossOriginServer) DoQuiz(roomID string, playerOne, playerTwo ent
 	}
 	scoreSummaryMsg, _ := json.Marshal(scoreSummarySocketMsg)
 	s.IoServer.BroadcastToRoom(roomID, TAG_DOQUIZ_FINISH_QUESTION, string(scoreSummaryMsg))
-	// leave all rooms
-	s.IoServer.ClearRoom(roomID)
 
 	err = s.QuizUC.SetUserInGame(ctx, playerOne.Player, false)
 	if err != nil {
@@ -223,6 +221,10 @@ func (s *SocketCrossOriginServer) DoQuiz(roomID string, playerOne, playerTwo ent
 	if err != nil {
 		return
 	}
+
+	// leave all rooms
+	s.IoServer.ClearRoom(roomID)
+
 }
 
 func (s *SocketCrossOriginServer) InitSocket() {

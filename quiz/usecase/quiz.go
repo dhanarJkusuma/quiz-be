@@ -92,7 +92,7 @@ func (qu *quizUseCase) GetUserHistory(ctx context.Context, userID, page, size in
 			score = userHistory[i].ScoreP2
 		}
 
-		date := userHistory[i].CreatedAt.Format("02 Jan 06")
+		date := userHistory[i].CreatedAt.Format("02 Jan 06 15:04")
 
 		result = append(result, entity.UserHistorySummary{
 			Enemy:      enemy,

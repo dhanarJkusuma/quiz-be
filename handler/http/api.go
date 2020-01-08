@@ -23,5 +23,9 @@ func NewHandler(auth *pager.Pager, quc usecase.QuizUseCase) *Handler {
 func (h *Handler) Register(r *mux.Router) {
 	r.HandleFunc("/api/quiz", h.insertQuestion).Methods(http.MethodPost)
 
+	r.Handle("/api/user/login", middleware.HandleCORS(http.HandlerFunc(h.LoginHandler))).Methods(http.MethodPost, http.MethodOptions)
+	r.Handle("/api/user/register", middleware.HandleCORS(http.HandlerFunc(h.RegisterHandler))).Methods(http.MethodPost, http.MethodOptions)
 	r.Handle("/api/user/history", middleware.HandleCORS(h.auth.Auth.ProtectRouteUsingToken(http.HandlerFunc(h.fetchUserHistory)))).Methods(http.MethodGet, http.MethodOptions)
+	r.Handle("/api/user/logout", middleware.HandleCORS(h.auth.Auth.ProtectRouteUsingToken(http.HandlerFunc(h.logoutHandler)))).Methods(http.MethodPost, http.MethodOptions)
+	r.Handle("/api/user/verify", middleware.HandleCORS(h.auth.Auth.ProtectRouteUsingToken(http.HandlerFunc(h.verifyUser)))).Methods(http.MethodPost, http.MethodOptions)
 }

@@ -1,8 +1,8 @@
 package util
 
 import (
+	"errors"
 	jwtLib "github.com/dgrijalva/jwt-go"
-	"github.com/tokopedia/galadriel/src/lib/errors"
 )
 
 type JWTBuilder struct {
