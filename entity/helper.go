@@ -76,3 +76,11 @@ type QuestionSocketClaims struct {
 	GenerateAt string `json:"generate_at"`
 	QuestionID int64  `json:"question_id"`
 }
+
+/* Entity for Admin Dashboard */
+type BaseAdminData struct {
+	BaseUrl       string      `json:"base_url"`
+	ActiveSideBar string      `json:"active_sidebar"`
+	ActiveMenu    string      `json:"active_menu"`
+	AdminData     interface{} `json:"data"`
+}

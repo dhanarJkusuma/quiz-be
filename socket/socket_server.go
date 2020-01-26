@@ -108,12 +108,12 @@ func (s *SocketCrossOriginServer) DoQuiz(roomID string, playerOne, playerTwo ent
 	var err error
 	ctx := context.Background()
 
-	err = s.QuizUC.SetUserInGame(ctx, playerOne.Player, true)
+	err = s.QuizUC.SetUserInGame(ctx, roomID, playerOne.Player, true)
 	if err != nil {
 		return
 	}
 
-	err = s.QuizUC.SetUserInGame(ctx, playerTwo.Player, true)
+	err = s.QuizUC.SetUserInGame(ctx, roomID, playerTwo.Player, true)
 	if err != nil {
 		return
 	}
@@ -197,7 +197,7 @@ func (s *SocketCrossOriginServer) DoQuiz(roomID string, playerOne, playerTwo ent
 		time.Sleep(1 * time.Second)
 	}
 	// calculate score
-	scoreSummary, err := s.QuizUC.InsertUserScoreHistory(ctx, playerOne.Player, playerTwo.Player)
+	scoreSummary, err := s.QuizUC.InsertUserScoreHistory(ctx, roomID, playerOne.Player, playerTwo.Player)
 	if err != nil {
 		return
 	}
@@ -212,12 +212,12 @@ func (s *SocketCrossOriginServer) DoQuiz(roomID string, playerOne, playerTwo ent
 	scoreSummaryMsg, _ := json.Marshal(scoreSummarySocketMsg)
 	s.IoServer.BroadcastToRoom(roomID, TAG_DOQUIZ_FINISH_QUESTION, string(scoreSummaryMsg))
 
-	err = s.QuizUC.SetUserInGame(ctx, playerOne.Player, false)
+	err = s.QuizUC.SetUserInGame(ctx, roomID, playerOne.Player, false)
 	if err != nil {
 		return
 	}
 
-	err = s.QuizUC.SetUserInGame(ctx, playerTwo.Player, false)
+	err = s.QuizUC.SetUserInGame(ctx, roomID, playerTwo.Player, false)
 	if err != nil {
 		return
 	}
@@ -278,9 +278,11 @@ func (s *SocketCrossOriginServer) InitSocket() {
 		}
 
 		ctx := context.Background()
+		roomID := claims["room_id"].(string)
 		questionID := claims["question_id"].(float64)
 		scoreData, err := s.QuizUC.ValidateAnswer(
 			ctx,
+			roomID,
 			requestData.UserID,
 			int64(questionID),
 			requestData.AnswerID,
@@ -290,7 +292,6 @@ func (s *SocketCrossOriginServer) InitSocket() {
 			return
 		}
 
-		roomID := claims["room_id"].(string)
 		msgScore := entity.ScoreSocket{
 			PlayerID: requestData.UserID,
 			Score:    scoreData.Score,

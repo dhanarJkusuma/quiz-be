@@ -7,7 +7,6 @@ import (
 	"github.com/dhanarJkusuma/quiz/entity"
 	"github.com/dhanarJkusuma/quiz/quiz/repository"
 	"github.com/go-redis/redis"
-	"time"
 )
 
 type QuizOptions struct {
@@ -37,22 +36,16 @@ func (qu *quizUseCase) AnswerQuiz(ctx context.Context, quizID, answerID int64) e
 	return nil
 }
 
-func (qu *quizUseCase) DoInitQuiz(ctx context.Context, userID int64) error {
-	currentTime := time.Now()
-	err := qu.quizRepo.InsertTxnQuiz(ctx, userID, currentTime)
-	if err != nil {
-		return nil
-	}
-
-	return qu.quizRepo.UpdateCachedScore(userID, 0)
+func (qu *quizUseCase) DoInitQuiz(ctx context.Context, roomID string, userID int64) error {
+	return qu.quizRepo.UpdateCachedScore(roomID, userID, 0)
 }
 
 func (qu *quizUseCase) GetRandomQuiz(ctx context.Context, total int) ([]entity.Quiz, error) {
 	return qu.quizRepo.RandomFetchQuiz(ctx, total)
 }
 
-func (qu *quizUseCase) ValidateAnswer(ctx context.Context, userID, questionID, answerID int64, delta int) (*entity.ScoreData, error) {
-	return qu.quizRepo.ValidateAnswer(ctx, userID, questionID, answerID, delta)
+func (qu *quizUseCase) ValidateAnswer(ctx context.Context, roomID string, userID, questionID, answerID int64, delta int) (*entity.ScoreData, error) {
+	return qu.quizRepo.ValidateAnswer(ctx, roomID, userID, questionID, answerID, delta)
 }
 
 func (qu *quizUseCase) GetUserEnemy(ctx context.Context, userID int64) (*pager.User, error) {
@@ -61,12 +54,12 @@ func (qu *quizUseCase) GetUserEnemy(ctx context.Context, userID int64) (*pager.U
 	}, nil)
 }
 
-func (qu *quizUseCase) SetUserInGame(ctx context.Context, userID int64, inGame bool) error {
-	return qu.quizRepo.SetUserInGame(ctx, userID, inGame)
+func (qu *quizUseCase) SetUserInGame(ctx context.Context, roomID string, userID int64, inGame bool) error {
+	return qu.quizRepo.SetUserInGame(ctx, roomID, userID, inGame)
 }
 
-func (qu *quizUseCase) InsertUserScoreHistory(ctx context.Context, userIDP1, userIDP2 int64) (*entity.SummaryScoreData, error) {
-	return qu.quizRepo.InsertUserScoreHistory(ctx, userIDP1, userIDP2)
+func (qu *quizUseCase) InsertUserScoreHistory(ctx context.Context, roomID string, userIDP1, userIDP2 int64) (*entity.SummaryScoreData, error) {
+	return qu.quizRepo.InsertUserScoreHistory(ctx, roomID, userIDP1, userIDP2)
 }
 
 func (qu *quizUseCase) GetUserHistory(ctx context.Context, userID, page, size int64) ([]entity.UserHistorySummary, error) {

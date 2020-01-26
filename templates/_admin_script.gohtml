@@ -1,0 +1,18 @@
+{{ define "_admin_script" }}
+    <script src="../static/assets/plugins/jquery/jquery.min.js"></script>
+    <script src="../static/assets/plugins/jquery-ui/jquery-ui.min.js"></script>
+    <script>
+        $.widget.bridge('uibutton', $.ui.button)
+    </script>
+    <script src="../static/assets/plugins/moment/moment.min.js"></script>
+    <script src="../static/assets/plugins/daterangepicker/daterangepicker.js"></scrip>
+    <script src="../static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../static/assets/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+    <script src="../static/assets/dist/js/adminlte.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.2/summernote.js"></script>
+    <script>
+        $(document).ready(function(){
+           $('#{{ .ActiveMenu }}').addClass("active");
+        });
+    </script>
+{{ end }}

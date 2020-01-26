@@ -3,6 +3,7 @@ package config
 import "time"
 
 type Config struct {
+	BaseUrl      string      `json:"base_url"`
 	Quiz         QuizConfig  `json:"quiz"`
 	DbConnection DbConfig    `json:"database"`
 	Redis        RedisConfig `json:"redis"`

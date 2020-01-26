@@ -92,8 +92,14 @@ func main() {
 	// handle router
 	r := mux.NewRouter()
 	r.Handle("/socket.io/", s)
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./templates/"))))
 
-	handlerAPI := httpHandler.NewHandler(auth, quc)
+	handlerAPI := httpHandler.NewHandler(&httpHandler.HandlerOptions{
+		Config:       &mainCfg,
+		Auth:         auth,
+		QuizUC:       quc,
+		TemplatePath: "/home/nakama/go/src/github.com/dhanarJkusuma/quiz/templates",
+	})
 	handlerAPI.Register(r)
 
 	fmt.Println("Your server running on port :8000")

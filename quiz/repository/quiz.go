@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/dhanarJkusuma/quiz/entity"
 	"github.com/go-redis/redis"
 	"strconv"
@@ -132,7 +133,7 @@ func (db *dbQuizRepository) GetQuiz(ctx context.Context, quizID int64) (*entity.
 	return nil, nil
 }
 
-func (db *dbQuizRepository) FetchQuiz() []entity.Quiz {
+func (db *dbQuizRepository) FetchQuiz(page, size int64) []entity.Quiz {
 	return nil
 }
 
@@ -199,18 +200,20 @@ func (db *dbQuizRepository) RandomFetchQuiz(ctx context.Context, total int) ([]e
 	return result, nil
 }
 
-func (db *dbQuizRepository) GetCachedScore(userId int64) (int, error) {
+func (db *dbQuizRepository) GetCachedScore(roomID string, userId int64) (int, error) {
 	keyUserID := strconv.FormatInt(userId, 10)
-	score, err := db.cacheClient.Get(keyUserID).Int()
+	cacheKey := fmt.Sprintf("%s:%s", roomID, keyUserID)
+	score, err := db.cacheClient.Get(cacheKey).Int()
 	if err != nil {
 		return 0, err
 	}
 	return score, nil
 }
 
-func (db *dbQuizRepository) UpdateCachedScore(userId int64, score int) error {
+func (db *dbQuizRepository) UpdateCachedScore(roomId string, userId int64, score int) error {
 	keyUserID := strconv.FormatInt(userId, 10)
-	return db.cacheClient.Set(keyUserID, score, 30*time.Minute).Err()
+	cacheKey := fmt.Sprintf("%s:%s", roomId, keyUserID)
+	return db.cacheClient.Set(cacheKey, score, 30*time.Minute).Err()
 }
 
 func (db *dbQuizRepository) InsertTxnQuiz(ctx context.Context, userId int64, start time.Time) error {
@@ -218,9 +221,9 @@ func (db *dbQuizRepository) InsertTxnQuiz(ctx context.Context, userId int64, sta
 	return err
 }
 
-func (db *dbQuizRepository) ValidateAnswer(ctx context.Context, userID, questionID, answerID int64, delta int) (*entity.ScoreData, error) {
+func (db *dbQuizRepository) ValidateAnswer(ctx context.Context, roomID string, userID, questionID, answerID int64, delta int) (*entity.ScoreData, error) {
 	// get cached score
-	score, err := db.GetCachedScore(userID)
+	score, err := db.GetCachedScore(roomID, userID)
 	if err != nil {
 		if err == redis.Nil {
 			return nil, ErrUserNotInGame
@@ -239,7 +242,7 @@ func (db *dbQuizRepository) ValidateAnswer(ctx context.Context, userID, question
 	}
 
 	currentScore := score + delta
-	err = db.UpdateCachedScore(userID, currentScore)
+	err = db.UpdateCachedScore(roomID, userID, currentScore)
 	if err != nil {
 		return nil, err
 	}
@@ -250,37 +253,36 @@ func (db *dbQuizRepository) ValidateAnswer(ctx context.Context, userID, question
 	}, nil
 }
 
-func (db *dbQuizRepository) SetUserInGame(ctx context.Context, userID int64, inGame bool) error {
+func (db *dbQuizRepository) SetUserInGame(ctx context.Context, roomID string, userID int64, inGame bool) error {
 	keyUserID := strconv.FormatInt(userID, 10)
-	_, err := db.cacheClient.Get(keyUserID).Int()
+	keyCache := fmt.Sprintf("%s:%s", roomID, keyUserID)
+
+	_, err := db.cacheClient.Get(keyCache).Int()
 	switch err {
 	case redis.Nil:
 		if inGame {
-			return db.cacheClient.Set(keyUserID, InitialScore, 30*time.Minute).Err()
+			return db.cacheClient.Set(keyCache, InitialScore, 30*time.Minute).Err()
 		} else {
 			return ErrUserNotInGame
 		}
 	case nil:
-		if inGame {
-			return ErrUserInGame
-		} else {
-			return db.cacheClient.Del(keyUserID).Err()
-		}
+		return db.cacheClient.Del(keyUserID).Err()
 
 	default:
 		return err
 	}
 }
 
-func (db *dbQuizRepository) InsertUserScoreHistory(ctx context.Context, userIDP1, userIDP2 int64) (*entity.SummaryScoreData, error) {
+func (db *dbQuizRepository) InsertUserScoreHistory(ctx context.Context, roomID string, userIDP1, userIDP2 int64) (*entity.SummaryScoreData, error) {
 	var err error
 	var scoreP1, scoreP2 int
-	scoreP1, err = db.cacheClient.Get(strconv.FormatInt(userIDP1, 10)).Int()
+	cacheP1, cacheP2 := fmt.Sprintf("%s:%s", roomID, strconv.FormatInt(userIDP1, 10)), fmt.Sprintf("%s:%s", roomID, strconv.FormatInt(userIDP2, 10))
+	scoreP1, err = db.cacheClient.Get(cacheP1).Int()
 	if err != nil {
 		return nil, err
 	}
 
-	scoreP2, err = db.cacheClient.Get(strconv.FormatInt(userIDP2, 10)).Int()
+	scoreP2, err = db.cacheClient.Get(cacheP2).Int()
 	if err != nil {
 		return nil, err
 	}
