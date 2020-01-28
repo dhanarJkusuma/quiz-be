@@ -6,7 +6,17 @@ type Quiz struct {
 	ID       int64  `db:"id" json:"id"`
 	Question string `db:"question" json:"question"`
 
-	Answers []QuizAnswer `json:"answers"`
+	Answers  []QuizAnswer `json:"answers"`
+	IsActive bool         `db:"active" json:"active"`
+}
+
+type QuizDashboard struct {
+	Checkbox string `json:"checkbox"`
+	No       int64  `json:"no"`
+	ID       int64  `db:"id" json:"id"`
+	Question string `db:"question" json:"question"`
+	IsActive bool   `db:"active" json:"-"`
+	Status   string `json:"status"`
 }
 
 type QuizAnswer struct {
@@ -19,6 +29,7 @@ type QuizAnswer struct {
 type QuizAnswerRaw struct {
 	QuestionID int64  `db:"question_id"`
 	Question   string `db:"question"`
+	Active     bool   `db:"active"`
 	AnswerID   int64  `db:"answer_id"`
 	Answer     string `db:"answer"`
 	IsCorrect  bool   `db:"correct_answer"`

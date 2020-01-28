@@ -5,14 +5,20 @@
         $.widget.bridge('uibutton', $.ui.button)
     </script>
     <script src="../static/assets/plugins/moment/moment.min.js"></script>
-    <script src="../static/assets/plugins/daterangepicker/daterangepicker.js"></scrip>
+    <script src="../static/assets/plugins/daterangepicker/daterangepicker.js"></script>
     <script src="../static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="../static/assets/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+    <script src="../static/assets/plugins/bootstrap-switch-3.3.4/js/bootstrap-switch.min.js"></script>
     <script src="../static/assets/dist/js/adminlte.js"></script>
+    <script src="../static/assets/plugins/sweetalert2/sweetalert2.min.js"></script>
+    <script src="../static/assets/plugins/toastr/toastr.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.2/summernote.js"></script>
     <script>
         $(document).ready(function(){
            $('#{{ .ActiveMenu }}').addClass("active");
+        });
+        $("input[data-bootstrap-switch]").each(function(){
+            $(this).bootstrapSwitch('state', $(this).prop('checked'));
         });
     </script>
 {{ end }}

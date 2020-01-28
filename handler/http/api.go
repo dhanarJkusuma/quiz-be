@@ -18,14 +18,13 @@ type Handler struct {
 }
 
 type HandlerOptions struct {
-	Config       *config.Config
-	Auth         *pager.Pager
-	QuizUC       usecase.QuizUseCase
-	TemplatePath string
+	Config *config.Config
+	Auth   *pager.Pager
+	QuizUC usecase.QuizUseCase
 }
 
 func NewHandler(opts *HandlerOptions) *Handler {
-	templateHandler := util.NewTemplateHandler(opts.TemplatePath)
+	templateHandler := util.NewTemplateHandler(opts.Config.Quiz.TemplatePath)
 	return &Handler{
 		opts.Auth,
 		opts.Config,
@@ -35,14 +34,23 @@ func NewHandler(opts *HandlerOptions) *Handler {
 }
 
 func (h *Handler) Register(r *mux.Router) {
-	r.HandleFunc("/api/quiz", h.insertQuestion).Methods(http.MethodPost)
-
 	r.Handle("/api/user/login", middleware.HandleCORS(http.HandlerFunc(h.LoginHandler))).Methods(http.MethodPost, http.MethodOptions)
 	r.Handle("/api/user/register", middleware.HandleCORS(http.HandlerFunc(h.RegisterHandler))).Methods(http.MethodPost, http.MethodOptions)
 	r.Handle("/api/user/history", middleware.HandleCORS(h.auth.Auth.ProtectRouteUsingToken(http.HandlerFunc(h.fetchUserHistory)))).Methods(http.MethodGet, http.MethodOptions)
 	r.Handle("/api/user/logout", middleware.HandleCORS(h.auth.Auth.ProtectRouteUsingToken(http.HandlerFunc(h.logoutHandler)))).Methods(http.MethodPost, http.MethodOptions)
 	r.Handle("/api/user/verify", middleware.HandleCORS(h.auth.Auth.ProtectRouteUsingToken(http.HandlerFunc(h.verifyUser)))).Methods(http.MethodPost, http.MethodOptions)
 
-	r.HandleFunc("/admin/dashboard", h.handleAdminDashboard).Methods(http.MethodGet)
-	r.HandleFunc("/admin/quiz", h.handleQuizDashboard).Methods(http.MethodGet)
+	// r.HandleFunc("/admin/dashboard", h.handleAdminDashboard).Methods(http.MethodGet)
+	r.HandleFunc("/admin/login", h.handleAdminLogin).Methods(http.MethodGet)
+	r.HandleFunc("/admin/login", h.handleAdminLoginPost).Methods(http.MethodPost)
+	r.Handle("/admin/quiz", h.auth.Auth.ProtectRoute(h.auth.Auth.ProtectWithRBAC(http.HandlerFunc(h.handleQuizDashboard)))).Methods(http.MethodGet)
+
+	r.HandleFunc("/api/admin/quiz", h.insertQuestion).Methods(http.MethodPost)
+	r.HandleFunc("/api/admin/quiz", h.handleAjaxQuiz).Methods(http.MethodGet)
+	r.HandleFunc("/api/admin/quiz/detail", h.handleAjaxDetailQuiz).Methods(http.MethodGet)
+	r.HandleFunc("/api/admin/quiz/status", h.handleAjaxToggleQuiz).Methods(http.MethodPut)
+	r.HandleFunc("/api/admin/quiz/update", h.handleAjaxUpdateQuestion).Methods(http.MethodPut)
+	r.HandleFunc("/api/admin/quiz/delete", h.handleAjaxDeleteQuestion).Methods(http.MethodDelete)
+	r.HandleFunc("/api/admin/answer/update", h.handleAjaxUpdateAnswer).Methods(http.MethodPut)
+	r.HandleFunc("/api/admin/answer/delete", h.handleAjaxDeleteAnswer).Methods(http.MethodDelete)
 }

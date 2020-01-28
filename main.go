@@ -66,6 +66,13 @@ func main() {
 		panic(err.Error())
 	}
 
+	err = auth.Migration.Run(&AdminRoleMigration{
+		auth: auth.Auth,
+	})
+	if err != nil && err != pager.ErrMigrationAlreadyExist {
+		panic(err.Error())
+	}
+
 	//init modules
 	quc := usecase.NewQuizUseCase(&usecase.QuizOptions{
 		DbConn:      db,
@@ -95,10 +102,9 @@ func main() {
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./templates/"))))
 
 	handlerAPI := httpHandler.NewHandler(&httpHandler.HandlerOptions{
-		Config:       &mainCfg,
-		Auth:         auth,
-		QuizUC:       quc,
-		TemplatePath: "/home/nakama/go/src/github.com/dhanarJkusuma/quiz/templates",
+		Config: &mainCfg,
+		Auth:   auth,
+		QuizUC: quc,
 	})
 	handlerAPI.Register(r)
 

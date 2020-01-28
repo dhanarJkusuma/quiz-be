@@ -1,0 +1,41 @@
+{{ define  "_quiz_add_form" }}
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                Question
+            </h3>
+            <div class="card-tools">
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="tab-content p-0">
+                <form id="add-question">
+                    <div class="form-group">
+                        <label>Question: </label>
+                        <textarea
+                                id="add-question-text"
+                                class="form-control"
+                                rows="3"
+                                placeholder="Your Question ..."></textarea>
+                    </div>
+
+                    <!-- options -->
+                    <div class="add-options"></div>
+                    <button
+                            id="add-options-button"
+                            type="button"
+                            class="btn btn-info">Add Options</button>
+                    <button
+                            id="clear-options-button"
+                            type="button"
+                            class="btn btn-danger">Clear Options</button>
+                    <button
+                            type="submit"
+                            class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+            <br />
+        </div>
+    </div>
+{{ end }}

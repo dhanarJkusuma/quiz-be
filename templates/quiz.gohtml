@@ -6,6 +6,11 @@
     <title>QuizApp | Quiz</title>
 
     {{ template "_admin_source" }}
+
+    <!-- DataTables -->
+    <link rel="stylesheet" href="../static/assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="../static/assets/plugins/datatables-select/css/select.bootstrap4.min.css">
+    <link rel="stylesheet" href="../static/assets/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
 <div class="wrapper">
@@ -23,20 +28,42 @@
 
                 <div class="row">
                     <section class="col-lg-12 connectedSortable">
+
+                        {{ template "_quiz_add_form" }}
+
                         <div class="card">
                             <div class="card-header">
                                 <h3 class="card-title">
                                     <i class="nav-icon fas fa-tachometer-alt"></i>
-                                    Question
+                                    Question List
                                 </h3>
                                 <div class="card-tools">
 
                                 </div>
                             </div>
                             <div class="card-body">
-                                <div class="tab-content p-0">
-                                    Welcome to Quiz App Dashboard Admin {{ .ActiveMenu }}
-                                </div>
+                                <table id="questions" class="table table-bordered table-striped">
+                                    <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>No</th>
+                                        <th>Quiz ID</th>
+                                        <th>Question</th>
+                                        <th>Status</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                    <tfoot>
+                                    <tr>
+                                        <th></th>
+                                        <th>No</th>
+                                        <th>Quiz ID</th>
+                                        <th>Question</th>
+                                        <th>Status</th>
+                                    </tr>
+                                    </tfoot>
+                                </table>
                             </div>
                         </div>
                     </section>
@@ -44,14 +71,88 @@
 
             </div>
         </section>
-    </div>
 
-    {{ template "_admin_footer" }}
+        <!-- Modal Show -->
+        <div class="modal fade" id="modal-show">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">- Detail Question -</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <div class="make-switch" data-on="primary" data-off="info">
+                                <input
+                                        type="checkbox"
+                                        name="enabled"
+                                        id="detail-status" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <form id="update-question">
+                                <label>Question: </label>
+                                <textarea
+                                    id="detail-question"
+                                    class="form-control"
+                                    rows="3"
+                                    placeholder="Your Question ...">
+                                </textarea>
+                                <button
+                                        type="submit"
+                                        class="btn btn-block btn-outline-primary">Update</button>
+                            </form>
+                        </div>
+
+                        <!-- options -->
+                        <div class="detail-options"></div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modal-delete">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">- Delete Question -</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure to delete this question?</p>
+                        <p id="question-confirm"></p>
+                        <input type="hidden" name="confirm-id"/>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" id="question-destroyer" class="btn btn-danger">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
 
     <aside class="control-sidebar control-sidebar-dark"></aside>
+    </div>
 </div>
-
+{{ template "_admin_footer" }}
 
 {{ template "_admin_script" . }}
+<!-- DataTables -->
+<script src="../static/assets/plugins/datatables/jquery.dataTables.js"></script>
+<script src="../static/assets/plugins/datatables-bs4/js/dataTables.bootstrap4.js"></script>
+<script src="../static/assets/plugins/datatables-select/js/dataTables.select.min.js"></script>
+<script src="../static/assets/plugins/datatables-select/js/select.bootstrap4.min.js"></script>
+<script src="../static/assets/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+<script src="../static/assets/plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
+<script src="../static/assets/pages/questions.js"></script>
 </body>
 </html>

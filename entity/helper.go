@@ -6,8 +6,12 @@ import (
 )
 
 type StandardResponse struct {
-	Message string      `json:"message"`
+	Message string      `json:"message,omitempty"`
 	Data    interface{} `json:"data,omitempty"`
+
+	// for datatable only
+	RecordsTotal    int64 `json:"recordsTotal,omitempty"`
+	RecordsFiltered int64 `json:"recordsFiltered,omitempty"`
 }
 
 type SignInRequest struct {
@@ -83,4 +87,17 @@ type BaseAdminData struct {
 	ActiveSideBar string      `json:"active_sidebar"`
 	ActiveMenu    string      `json:"active_menu"`
 	AdminData     interface{} `json:"data"`
+}
+
+type QuestionStatusRequest struct {
+	Enabled bool `json:"enabled"`
+}
+
+type QuestionUpdateRequest struct {
+	Question string `json:"question"`
+}
+
+type AnswerUpdateRequest struct {
+	Answer  string `json:"answer"`
+	Correct bool   `json:"correct"`
 }

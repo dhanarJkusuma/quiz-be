@@ -96,3 +96,31 @@ func (qu *quizUseCase) GetUserHistory(ctx context.Context, userID, page, size in
 	}
 	return result, nil
 }
+
+func (qu *quizUseCase) FetchQuestionDashboard(ctx context.Context, query string, start, length int64) ([]entity.QuizDashboard, int64, error) {
+	return qu.quizRepo.FetchQuiz(ctx, query, start, length)
+}
+
+func (qu *quizUseCase) GetQuestionDetailDashboard(ctx context.Context, questionID int64) (*entity.Quiz, error) {
+	return qu.quizRepo.GetQuiz(ctx, questionID)
+}
+
+func (qu *quizUseCase) SetQuestionStatus(ctx context.Context, questionID int64, enabled bool) error {
+	return qu.quizRepo.SetQuestionStatus(ctx, questionID, enabled)
+}
+
+func (qu *quizUseCase) SetQuestion(ctx context.Context, questionID int64, question string) error {
+	return qu.quizRepo.UpdateQuestion(ctx, questionID, question)
+}
+
+func (qu *quizUseCase) DeleteQuestion(ctx context.Context, questionID int64) error {
+	return qu.quizRepo.DeleteQuestion(ctx, questionID)
+}
+
+func (qu *quizUseCase) UpdateAnswer(ctx context.Context, answerID int64, answer string, correct bool) error {
+	return qu.quizRepo.UpdateAnswer(ctx, answerID, answer, correct)
+}
+
+func (qu *quizUseCase) DeleteAnswer(ctx context.Context, answerID int64) error {
+	return qu.quizRepo.DeleteAnswer(ctx, answerID)
+}

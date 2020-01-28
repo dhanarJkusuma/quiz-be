@@ -38,21 +38,53 @@ const (
 	insertQuizAnswerQuery = `INSERT INTO answer(quiz_id, answer, correct_answer) VALUES (?,?,?)`
 	insertTxnQuizQuery    = `INSERT INTO txn_quiz(user_id, start_time) VALUES (?,?)`
 
-	fetchQuizAnswerQuery = `
-	SELECT 
-		q.id AS quiz_id, 
-		q.question AS question,
-		a.id AS answer_id,
-		a.answer AS answer, 
-		a.correct_answer AS correct_answer
-	FROM answer a 
-	JOIN (
+	fetchQuizAdminQuery = `
 		SELECT 
-			id, 
-			question 
-		FROM quiz ORDER BY RAND() LIMIT ?
-	) q ON a.quiz_id=q.id ORDER BY q.id`
+			id,
+			question,
+			active
+		FROM quiz
+		WHERE 
+			question LIKE ?
+		ORDER BY updated_at DESC 
+		LIMIT ? OFFSET ?
+	`
+	fetchQuizAdminCountQuery = `
+		SELECT 
+			count(1) as count_data
+		FROM quiz
+		WHERE 
+			question LIKE ?
+	`
+	fetchQuizAdminDetailQuery = `
+		SELECT 
+			q.id AS quiz_id, 
+			q.question AS question,
+			q.active AS active,
+			a.id AS answer_id,
+			a.answer AS answer, 
+			a.correct_answer AS correct_answer
+		FROM answer a 
+		JOIN quiz q ON a.quiz_id = q.id 
+		WHERE q.id = ?
+	`
 
+	fetchQuizAnswerQuery = `
+		SELECT 
+			q.id AS quiz_id, 
+			q.question AS question,
+			q.active AS active,
+			a.id AS answer_id,
+			a.answer AS answer, 
+			a.correct_answer AS correct_answer
+		FROM answer a 
+		JOIN (
+			SELECT 
+				id, 
+				question 
+			FROM quiz ORDER BY RAND() LIMIT ?
+		) q ON a.quiz_id=q.id ORDER BY q.id
+	`
 	validateAnswerQuery = `
 		SELECT 
 			count(1) as count_data
@@ -69,7 +101,6 @@ const (
 			score_p2
 		) VALUES (?,?,?,?)
 	`
-
 	getUserHistoryQuery = `
 		SELECT 
 			h.id,
@@ -86,6 +117,31 @@ const (
 		WHERE 
 			h.user_id_p1 = ? OR h.user_id_p2 = ?
 		ORDER BY h.created_at DESC LIMIT ? OFFSET ? 
+	`
+
+	updateQuestionStatusQuery = `
+		UPDATE quiz
+			SET active = ?
+		WHERE id = ?
+	`
+	updateQuestionQuery = `
+		UPDATE quiz
+			SET question = ?
+		WHERE id = ?
+	`
+
+	updateAnswerQuery = `
+		UPDATE answer 
+			SET answer = ?, correct_answer = ? 
+		WHERE id = ?
+	`
+
+	deleteQuestionQuery = `
+		DELETE FROM quiz WHERE id = ?
+	`
+
+	deleteAnswerQuery = `
+		DELETE FROM answer WHERE id = ?
 	`
 )
 
@@ -129,12 +185,113 @@ func (db *dbQuizRepository) InsertQuiz(ctx context.Context, quiz *entity.Quiz) (
 }
 
 func (db *dbQuizRepository) GetQuiz(ctx context.Context, quizID int64) (*entity.Quiz, error) {
+	rows, err := db.dbConn.QueryContext(ctx, fetchQuizAdminDetailQuery, quizID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-	return nil, nil
+	var currentQuizID int64
+	var currentQuiz *entity.Quiz
+	result := make([]entity.Quiz, 0)
+
+	for rows.Next() {
+		var quizAnswer entity.QuizAnswerRaw
+		err = rows.Scan(
+			&quizAnswer.QuestionID,
+			&quizAnswer.Question,
+			&quizAnswer.Active,
+			&quizAnswer.AnswerID,
+			&quizAnswer.Answer,
+			&quizAnswer.IsCorrect,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if currentQuizID != quizAnswer.QuestionID {
+			if currentQuiz != nil {
+				result = append(result, *currentQuiz)
+			}
+
+			answers := []entity.QuizAnswer{
+				{
+					ID:        quizAnswer.AnswerID,
+					QuizID:    quizAnswer.QuestionID,
+					Answer:    quizAnswer.Answer,
+					IsCorrect: quizAnswer.IsCorrect,
+				},
+			}
+			currentQuiz = &entity.Quiz{
+				ID:       quizAnswer.QuestionID,
+				Question: quizAnswer.Question,
+				IsActive: quizAnswer.Active,
+				Answers:  answers,
+			}
+			currentQuizID = currentQuiz.ID
+		} else {
+			if currentQuiz != nil {
+				answers := append(currentQuiz.Answers, entity.QuizAnswer{
+					ID:        quizAnswer.AnswerID,
+					QuizID:    quizAnswer.QuestionID,
+					Answer:    quizAnswer.Answer,
+					IsCorrect: quizAnswer.IsCorrect,
+				})
+				currentQuiz.Answers = answers
+			}
+		}
+	}
+
+	return currentQuiz, nil
 }
 
-func (db *dbQuizRepository) FetchQuiz(page, size int64) []entity.Quiz {
-	return nil
+func (db *dbQuizRepository) FetchQuiz(ctx context.Context, search string, offset, size int64) ([]entity.QuizDashboard, int64, error) {
+	var err error
+	tx, err := db.dbConn.Begin()
+	if err != nil {
+		return nil, 0, err
+	}
+	search = fmt.Sprintf("%%%s%%", search)
+	rows, err := tx.QueryContext(ctx, fetchQuizAdminQuery, search, size, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	result := make([]entity.QuizDashboard, 0)
+	idx := int64(1)
+	for rows.Next() {
+		var question entity.QuizDashboard
+		err = rows.Scan(
+			&question.ID,
+			&question.Question,
+			&question.IsActive,
+		)
+		if err != nil {
+			return nil, 0, err
+		}
+		if question.IsActive {
+			question.Status = "active"
+		} else {
+			question.Status = "deactivate"
+		}
+
+		question.No = idx
+		result = append(result, question)
+		idx++
+	}
+
+	var countData entity.CountData
+	row := db.dbConn.QueryRowContext(ctx, fetchQuizAdminCountQuery, search)
+	err = row.Scan(&countData.Count)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return nil, 0, err
+	}
+	return result, countData.Count, nil
 }
 
 func (db *dbQuizRepository) RandomFetchQuiz(ctx context.Context, total int) ([]entity.Quiz, error) {
@@ -153,6 +310,7 @@ func (db *dbQuizRepository) RandomFetchQuiz(ctx context.Context, total int) ([]e
 		err = rows.Scan(
 			&quizAnswer.QuestionID,
 			&quizAnswer.Question,
+			&quizAnswer.Active,
 			&quizAnswer.AnswerID,
 			&quizAnswer.Answer,
 			&quizAnswer.IsCorrect,
@@ -177,6 +335,7 @@ func (db *dbQuizRepository) RandomFetchQuiz(ctx context.Context, total int) ([]e
 			previousQuiz = &entity.Quiz{
 				ID:       quizAnswer.QuestionID,
 				Question: quizAnswer.Question,
+				IsActive: quizAnswer.Active,
 				Answers:  answers,
 			}
 			previousQuizID = previousQuiz.ID
@@ -326,4 +485,29 @@ func (db *dbQuizRepository) GetUserHistory(ctx context.Context, userIDP1, page, 
 		result = append(result, history)
 	}
 	return result, nil
+}
+
+func (db *dbQuizRepository) SetQuestionStatus(ctx context.Context, questionId int64, enabled bool) error {
+	_, err := db.dbConn.ExecContext(ctx, updateQuestionStatusQuery, enabled, questionId)
+	return err
+}
+
+func (db *dbQuizRepository) UpdateQuestion(ctx context.Context, questionId int64, question string) error {
+	_, err := db.dbConn.ExecContext(ctx, updateQuestionQuery, question, questionId)
+	return err
+}
+
+func (db *dbQuizRepository) DeleteQuestion(ctx context.Context, questionID int64) error {
+	_, err := db.dbConn.ExecContext(ctx, deleteQuestionQuery, questionID)
+	return err
+}
+
+func (db *dbQuizRepository) UpdateAnswer(ctx context.Context, answerID int64, answer string, correct bool) error {
+	_, err := db.dbConn.ExecContext(ctx, updateAnswerQuery, answer, correct, answerID)
+	return err
+}
+
+func (db *dbQuizRepository) DeleteAnswer(ctx context.Context, answerID int64) error {
+	_, err := db.dbConn.ExecContext(ctx, deleteAnswerQuery, answerID)
+	return err
 }

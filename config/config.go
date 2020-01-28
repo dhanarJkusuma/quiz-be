@@ -14,6 +14,7 @@ type QuizConfig struct {
 	NumberOfQuestion int           `json:"number_of_question"`
 	ReadyCountDown   time.Duration `json:"ready_count_down"`
 	CountDown        time.Duration `json:"count_down"`
+	TemplatePath     string        `json:"template_path"`
 }
 
 type DbConfig struct {

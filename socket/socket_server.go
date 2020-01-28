@@ -72,7 +72,7 @@ func (s *SocketCrossOriginServer) DoMatchMaking() {
 		time.Sleep(1 * time.Second)
 
 		s.mutex.RLock()
-		fmt.Println(s.userPoolConnection)
+		//fmt.Println(s.userPoolConnection)
 		lenUsersPool := len(s.userPoolConnection)
 		iteration := lenUsersPool / 2
 		for k := 0; k < iteration; k++ {

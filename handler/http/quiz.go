@@ -31,8 +31,9 @@ func (h *Handler) insertQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	response.Message = "Question inserted successfully."
 	response.Data = data
-	util.HandleJson(w, http.StatusOK, response)
+	util.HandleJson(w, http.StatusCreated, response)
 	return
 }
 
