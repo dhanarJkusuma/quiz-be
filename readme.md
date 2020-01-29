@@ -49,8 +49,9 @@ git clone https://github.com/dhanarJkusuma/quiz-be.git quiz
        <li>`template_path`: html template path</li>
        <li>`secret_key`: get the random string for security purpose</li>
    </ul>
-5. Go to root project directory and run script: `dep ensure -v`
-6. To start the project, run: `go run *.go`
+5. Run MySQL script inside `rootProject/migrations/001_init.quiz.sql`
+6. Go to root project directory and run script: `dep ensure -v`
+7. To start the project, run: `go run *.go`
 
 ## Available Route
 <ul>
