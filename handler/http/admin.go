@@ -56,6 +56,7 @@ func (h *Handler) handleAdminLoginPost(w http.ResponseWriter, r *http.Request) {
 		default:
 			//TODO::setSessionErr
 			http.Redirect(w, r, "/admin/login", 302)
+			return
 		}
 	}
 
