@@ -81,7 +81,8 @@ const (
 		JOIN (
 			SELECT 
 				id, 
-				question 
+				question,
+				active
 			FROM quiz ORDER BY RAND() LIMIT ?
 		) q ON a.quiz_id=q.id ORDER BY q.id
 	`
