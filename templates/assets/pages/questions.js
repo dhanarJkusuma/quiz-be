@@ -69,16 +69,45 @@ $(function () {
         "buttons": buttons
     });
 
+    Table.on( 'select', function ( e, dt, type, indexes ) {
+        handleAvailableButton();
+    });
+
+    Table.on( 'deselect', function ( e, dt, type, indexes ) {
+        handleAvailableButton();
+    } );
+
     // override button style
     setDataTableButtonStyles();
     setFormUpdateListener();
     setAddForm();
     setConfirmForm();
+    handleAvailableButton();
 
+    $('#submit-question-add').prop('disabled', true);
+    $('#add-question-text').keyup(function (e) {
+        var value = $('#add-question-text').val();
+        if(value.length > 0) {
+            $('#submit-question-add').prop('disabled', false);
+        }else{
+            $('#submit-question-add').prop('disabled', true);
+        }
+    });
     $('#modal-show').on('hidden.bs.modal', function () {
         Table.ajax.reload();
     });
 });
+
+function handleAvailableButton(){
+    var countSelected = Table.rows( '.selected' ).count();
+    if(countSelected > 0) {
+        $('.show-btn').prop('disabled', false);
+        $('.remove-btn').prop('disabled', false);
+    }else {
+        $('.show-btn').prop('disabled', true);
+        $('.remove-btn').prop('disabled', true);
+    }
+}
 
 function setDataTableButtonStyles(){
     $('.edit-btn').removeClass("btn-secondary");

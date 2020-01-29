@@ -23,7 +23,12 @@ func (h *Handler) handleAdminDashboard(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleAdminLogin(w http.ResponseWriter, r *http.Request) {
-	err := h.templateHandler.ServeTemplate(w, "login.gohtml", nil)
+	checkCookie, err := r.Cookie(h.auth.Auth.SessionName)
+	if checkCookie != nil && err == nil {
+		http.Redirect(w, r, "/admin/quiz", 302)
+		return
+	}
+	err = h.templateHandler.ServeTemplate(w, "login.gohtml", nil)
 	if err != nil {
 		util.HandleJson(w, http.StatusInternalServerError, err)
 		return
@@ -32,7 +37,7 @@ func (h *Handler) handleAdminLogin(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) handleAdminLoginPost(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
-		http.ServeFile(w, r, "views/login.html")
+		http.Redirect(w, r, "/admin/login", 302)
 		return
 	}
 	email := r.FormValue("email")
@@ -55,6 +60,12 @@ func (h *Handler) handleAdminLoginPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/admin/quiz", 302)
+	return
+}
+
+func (h *Handler) handleAdminLogoutPost(w http.ResponseWriter, r *http.Request) {
+	h.auth.Auth.ClearSession(w, r)
+	http.Redirect(w, r, "/admin/login", 302)
 	return
 }
 

@@ -60,6 +60,7 @@ func main() {
 		db:          db,
 		redisClient: cacheClient,
 		schema:      dbConf.DbName,
+		origin:      mainCfg.BaseUrl,
 	})
 	err = auth.Migration.InitDBMigration()
 	if err != nil {
@@ -117,6 +118,7 @@ type authOptions struct {
 	redisClient *redis.Client
 	db          *sql.DB
 	schema      string
+	origin      string
 }
 
 func generateAuth(options *authOptions) *pager.Pager {
@@ -126,9 +128,10 @@ func generateAuth(options *authOptions) *pager.Pager {
 		DbConnection: options.db,
 		SchemaName:   options.schema,
 		Session: pager.SessionOptions{
+			Origin:           options.origin,
 			LoginMethod:      pager.LoginEmail,
 			ExpiredInSeconds: int64(24 * time.Hour),
-			SessionName:      "cookie",
+			SessionName:      "_Quiz_App",
 		},
 	}).BuildPager()
 }
