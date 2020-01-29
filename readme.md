@@ -10,10 +10,13 @@ This project was built using Golang Programming Language, Redis, MySQL, and Sock
 </ul>
 
 ## How to start?
-
-1. Install Dep, here is the link [Dep Golang](https://github.com/golang/dep)
-2. Run Redis and MySQL Server
-3. Setting your config in `env.json`
+1. Clone the repository
+```
+git clone https://github.com/dhanarJkusuma/quiz-be.git quiz
+```
+2. Install Dep, here is the link [Dep Golang](https://github.com/golang/dep)
+3. Run Redis and MySQL Server
+4. Setting your config in `env.json`
     ```json
     {
       "base_url": "localhost:8000", 
@@ -44,9 +47,10 @@ This project was built using Golang Programming Language, Redis, MySQL, and Sock
        <li>`ready_count_down`: countdown before quiz is started </li>
        <li>`count_down`: countdown during quiz </li>
        <li>`template_path`: html template path</li>
+       <li>`secret_key`: get the random string for security purpose</li>
    </ul>
-4. Go to root project directory and run script: `dep ensure -v`
-5. To start the project, run: `go run *.go`
+5. Go to root project directory and run script: `dep ensure -v`
+6. To start the project, run: `go run *.go`
 
 ## Available Route
 <ul>
